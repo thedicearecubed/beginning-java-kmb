@@ -1,0 +1,79 @@
+/* This class implements a "fail=soft" array which prevents
+	 runtime errors.
+*/
+
+class FailSoftArray {
+	private int a[]; // reference to array, notice it is not initialized
+	private int errval; // value to return if get() fails
+	public int length; // length of the array is public (why? couldn't you change it?)
+
+	/* Contruct array given its size and the value to
+		 return if get() fails. */
+	public FailSoftArray(int size, int errv) {
+		a = new int[size];
+		errval = errv;
+		length = size;
+	}
+
+	// Return value at given index
+	public int get(int index) {
+		if(ok(index)) return a[index]; // Remember, methods CAN access instance variables, even when they are private
+		return errval;
+	}
+
+	// Put a value at an index. Return false on failure.
+	public boolean put(int index, int val) {
+		if(ok(index)) {
+			a[index] = val;
+			return true;
+		}
+		return false;
+	}
+
+	// Return true if index is within bounds.
+	private boolean ok(int index) {
+		if(index >= 0 & index < length) return true; // I think this is vul'n b/c length is public
+		return false;
+	}
+}
+
+//Demonstrate the fail-soft array.
+class FSDemo {
+	public static void main(String args[]) {
+		FailSoftArray fs = new FailSoftArray(5,-1);
+		int x;
+
+		// show quiet failures
+		System.out.println("Fail quietly.");
+		for(int i=0;i < (fs.length * 2); i++)
+			fs.put(i, i*10);
+
+		for(int i=0;i < (fs.length * 2); i++){
+			x = fs.get(i);
+			if(x != -1) System.out.print(x + " ");
+		}
+		System.out.println("\n");
+
+		fs.length = 10;
+
+		//now handle failures
+		System.out.println("\nFail with error reports.");
+
+		for(int i=0;i < (fs.length * 2); i++)
+			if(!fs.put(i, i*10))
+				System.out.println("Index " + i + " out-of-bounds");
+
+		for(int i=0;i < (fs.length * 2); i++){
+			x = fs.get(i);
+			if(x != -1) System.out.print(x + " ");
+			else
+				System.out.println("Index " + i + " out-of-bounds");
+		}
+	}
+}
+
+
+
+
+
+
